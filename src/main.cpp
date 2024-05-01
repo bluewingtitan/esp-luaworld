@@ -15,8 +15,9 @@ void setup()
   manager.autoConnect("espnetes");
 
   lua.open_libraries(sol::lib::base);
-  espn::lua::add_imports(lua);
-  espn::lua::execute_http_demo(lua);
+  lw::add_imports(lua);
+  lw::overwrite_defaults(lua);
+  lw::execute_http_demo(lua);
 }
 
 void loop()

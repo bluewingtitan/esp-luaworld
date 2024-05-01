@@ -53,6 +53,11 @@ public:
         return req_->getParam(param_name.c_str())->value().c_str();
     }
 
+    void redirect(std::string target)
+    {
+        req_->redirect(target.c_str());
+    }
+
 private:
     AsyncWebServerRequest *req_;
 };
@@ -96,26 +101,29 @@ private:
     AsyncWebServer server;
 };
 
-void espn::lua::register_http_server(sol::state &lua)
+void lw::register_http_server(sol::state &lua)
 {
-    lua.new_usertype<http_request>("request",
-                                   sol::constructors<http_request()>(),
-                                   "code",
-                                   &http_request::code,
-                                   "send",
-                                   &http_request::send,
-                                   "has_header",
-                                   &http_request::has_header,
-                                   "get_header",
-                                   &http_request::get_header,
-                                   "has_arg",
-                                   &http_request::has_arg,
-                                   "get_arg",
-                                   &http_request::get_arg,
-                                   "has_param",
-                                   &http_request::has_param,
-                                   "get_param",
-                                   &http_request::get_param //
+    lua.new_usertype<http_request>(
+        "request",
+        sol::constructors<http_request()>(),
+        "code",
+        &http_request::code,
+        "send",
+        &http_request::send,
+        "redirect",
+        &http_request::redirect,
+        "has_header",
+        &http_request::has_header,
+        "get_header",
+        &http_request::get_header,
+        "has_arg",
+        &http_request::has_arg,
+        "get_arg",
+        &http_request::get_arg,
+        "has_param",
+        &http_request::has_param,
+        "get_param",
+        &http_request::get_param //
     );
 
     lua.new_usertype<http_server>(
@@ -139,20 +147,30 @@ void espn::lua::register_http_server(sol::state &lua)
     lua["HTTP_ANY"] = HTTP_ANY;
 }
 
-void espn::lua::execute_http_demo(sol::state &lua)
+void lw::execute_http_demo(sol::state &lua)
 {
     std::string demo_script = R"(
-        -- lua http server demo script
+-- lua http server demo script
 
-        use("webserver")
+use("webserver")
 
-        function demo_handler(req)
-            req:send(200, "text/plain", "Hello, World!")
-        end
+---@type fun(req: http_request)
+local function demo_handler(req)
+    print("GET: /")
+    req:send(200, "text/plain", "Hello, World!")
+end
 
-        server = webserver.new(8080)
-        server:on("/", HTTP_GET, demo_handler)
-        server:begin()
+---@type fun(req: http_request)
+local function not_found_handler(req)
+    print("GET: 404")
+    req:redirect("/")
+end
+
+local server = webserver.new(8080)
+server:on("/", HTTP_GET, demo_handler)
+server:on_not_found(not_found_handler)
+server:begin()
+
     )";
 
     Serial.println("Running http demo...");

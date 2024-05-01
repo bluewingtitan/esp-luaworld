@@ -30,15 +30,19 @@ _G.HTTP_ANY = nil
 
 
 -- class definitions
+
+--import with use("webserver")
 ---@class webserver_imp
 ---@field on fun(this:webserver_imp, path:string, http_method:http_method, callback:fun(req: http_request))
 ---@field on_not_found fun(this:webserver_imp, callback:fun(req: http_request))
 ---@field begin fun(this:webserver_imp)
 local webserver_imp_dummy = {}
 
+--import with use("webserver")
 ---@class http_request
 ---@field code fun(this:http_request, code:number)
 ---@field send fun(this:http_request, code:number, type:string, content:string)
+---@field redirect fun(this:http_request, target:string)
 ---@field has_header fun(this:http_request, name:string)
 ---@field get_header fun(this:http_request, name:string): string
 ---@field has_arg fun(this:http_request, name:string)
@@ -47,5 +51,6 @@ local webserver_imp_dummy = {}
 ---@field get_param fun(this:http_request, name:string): string
 local http_request_dummy = {}
 
+--import with use("webserver")
 ---@class http_method
 local http_method_dummy = {}

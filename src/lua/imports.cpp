@@ -64,18 +64,6 @@ String find_lua_file(File dir, String lua_base_path, String searched_lua)
     return "";
 }
 
-int load_file_spiffs(lua_State *L)
-{
-    auto dir = SPIFFS.open("/");
-    return load_file_require(L, dir);
-}
-
-int load_file_sd(lua_State *L)
-{
-    auto dir = SD.open("/lua/");
-    return load_file_require(L, dir);
-}
-
 int load_file_require(lua_State *L, fs::File &dir)
 {
     std::string path = sol::stack::get<std::string>(L);
@@ -101,11 +89,29 @@ int load_file_require(lua_State *L, fs::File &dir)
     return 1;
 }
 
+int load_file_spiffs(lua_State *L)
+{
+    auto dir = SPIFFS.open("/");
+    return load_file_require(L, dir);
+}
+
+int load_file_sd(lua_State *L)
+{
+    auto dir = SD.open("/lua/");
+    return load_file_require(L, dir);
+}
+
 void use(sol::state &lua, std::string lib)
 {
     if (lib == "webserver")
     {
-        espn::lua::register_http_server(lua);
+        lw::register_http_server(lua);
+        return;
+    }
+
+    if (lib == "io")
+    {
+        lw::register_io(lua);
         return;
     }
 
@@ -140,15 +146,15 @@ void use(sol::state &lua, std::string lib)
     }
 }
 
-void espn::lua::add_imports(sol::state &lua)
+void lw::add_imports(sol::state &lua)
 {
     lua["use"] = [&lua](std::string pck)
     {
         use(lua, pck);
     };
+}
 
-    lua["package"]["searchers"] = lua.create_table_with(
-        1, load_file_spiffs, //
-        2, load_file_sd      //
-    );
+void lw::overwrite_defaults(sol::state &lua)
+{
+    // not needed yet.
 }

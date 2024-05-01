@@ -1,4 +1,4 @@
-# lua scripting in espnetes
+# lua scripting in lua-world
 
 ## deployment
 
@@ -16,7 +16,7 @@ after this, you should have intellisense.
 
 ## require() and libraries
 
-Because overwriting the require() function comes with compromises am currently not willing to take, espnetes has it's own alternative: `use(...)`
+Because overwriting the require() function comes with compromises am currently not willing to take, lua-world has it's own alternative: `use(...)`
 
 require() can still be used to import other local lua files/modules.
 Modules will be searched in spiffs and on a potential sd card.
@@ -40,5 +40,12 @@ For custom libs look into the following sections
 #### webserver
 
 > an async webserver with routing.
+> `use("webserver")`
 
 Look into examples/webserver.lua for an example.
+
+#### io
+
+> not the default io package
+> instead specific for esp32 (basic pin manipulation)
+> `use("io")`
