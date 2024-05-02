@@ -1,3 +1,4 @@
--- import during development for intellisense
+-- import during development only for intellisense
 require("http_server")
-require("other")
+require("sqlite3")
+require("io")

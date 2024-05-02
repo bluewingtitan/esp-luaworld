@@ -9,6 +9,8 @@ namespace lw
 
     void register_io(sol::state &lua);
 
+    void register_sqlite(sol::state &lua);
+
     void add_imports(sol::state &lua);
     void overwrite_defaults(sol::state &lua);
 } // namespace netes

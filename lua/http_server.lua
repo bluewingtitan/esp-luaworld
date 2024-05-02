@@ -35,7 +35,6 @@ _G.HTTP_ANY = nil
 ---@field on fun(this:webserver_imp, path:string, http_method:http_method, callback:fun(req: http_request))
 ---@field on_not_found fun(this:webserver_imp, callback:fun(req: http_request))
 ---@field begin fun(this:webserver_imp)
-local webserver_imp_dummy
 
 --import with use("webserver")
 ---@class http_request
@@ -51,19 +50,15 @@ local webserver_imp_dummy
 ---@field begin_response fun(this:http_request, code:integer, type:string, content:string): http_response
 ---@field begin_response_code fun(this:http_request, code:integer): http_response
 ---@field begin_stream fun(this:http_request, type:string): http_response_stream
-local http_request_dummy
 
 --import with use("webserver")
 ---@class http_method
-local http_method_dummy
 
 --import with use("webserver")
 ---@class http_response
 ---@field add_header fun(this:http_response, key:string, value:string)
 ---@field set_code fun(this:http_response, code:integer)
 ---@field send fun(this:http_response)
-local http_response_dummy
-
 
 --import with use("webserver")
 ---@class http_response_stream
@@ -71,4 +66,3 @@ local http_response_dummy
 ---@field add_header fun(this:http_response_stream, key:string, value:string)
 ---@field set_code fun(this:http_response_stream, code:integer)
 ---@field send fun(this:http_response_stream)
-local http_response_stream_dummy

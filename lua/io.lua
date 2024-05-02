@@ -2,7 +2,7 @@
 -- use for intellisense.
 
 -- io
----@type io
+---@type lw_io
 _G.io = nil
 
 -- digital pin states
@@ -40,23 +40,19 @@ _G.LSBFIRST = nil
 -- class definitions
 
 --import with use("io")
----@class io
+---@class lw_io
 ---@field digital_read fun(pin:integer):pin_state
 ---@field digital_write fun(pin:integer, val:pin_state)
 ---@field analog_read fun(pin:integer): integer
 ---@field analog_write fun(pin:integer, val:integer)
 ---@field pin_mode fun(pin:integer, mode:pin_mode)
 ---@field shift_out fun(data_pin:integer, clock_pin:integer, bit_order:bit_order, val:integer)
-local io_dummy
 
 --import with use("io")
 ---@class pin_mode
-local pin_mode_dummy
 
 --import with use("io")
 ---@class pin_state
-local pin_state_dummy
 
 --import with use("io")
 ---@class bit_order
-local bit_order_dummy

@@ -64,20 +64,18 @@ String find_lua_file(File dir, String lua_base_path, String searched_lua)
     return "";
 }
 
-int load_file_require(lua_State *L, fs::File &dir)
+int load_file_require(sol::state &state, fs::File &dir, const char *req)
 {
-    std::string path = sol::stack::get<std::string>(L);
-
     if (dir)
     {
         if (dir.isDirectory())
         {
-            auto ret = find_lua_file(dir, "", path.c_str());
+            auto ret = find_lua_file(dir, "", req);
 
             if (ret.length() > 0)
             {
-                luaL_loadbuffer(L, ret.begin(), ret.length(), path.c_str());
-                return 1;
+                state.load(ret.c_str(), req);
+                return 0;
             }
         }
         dir.close();
@@ -85,20 +83,19 @@ int load_file_require(lua_State *L, fs::File &dir)
 
     Serial.println("Couldn't find module.");
 
-    sol::stack::push(L, "Sorry dev, but your module is in another castle.");
     return 1;
 }
 
-int load_file_spiffs(lua_State *L)
+int load_file_spiffs(sol::state &state, const char *req)
 {
     auto dir = SPIFFS.open("/");
-    return load_file_require(L, dir);
+    return load_file_require(state, dir, req);
 }
 
-int load_file_sd(lua_State *L)
+int load_file_sd(sol::state &state, const char *req)
 {
     auto dir = SD.open("/lua/");
-    return load_file_require(L, dir);
+    return load_file_require(state, dir, req);
 }
 
 void use(sol::state &lua, std::string lib)
@@ -144,11 +141,21 @@ void use(sol::state &lua, std::string lib)
         lua.open_libraries(sol::lib::utf8);
         return;
     }
+
+    if (load_file_spiffs(lua, lib.c_str()) == 0)
+    {
+        return;
+    }
+
+    if (load_file_sd(lua, lib.c_str()) == 0)
+    {
+        return;
+    }
 }
 
 void lw::add_imports(sol::state &lua)
 {
-    lua["use"] = [&lua](std::string pck)
+    lua["require"] = [&lua](std::string pck)
     {
         use(lua, pck);
     };

@@ -11,8 +11,12 @@ void setup()
   SPIFFS.begin();
   Serial.begin(115200);
 
-  WiFiManager manager{};
-  manager.autoConnect("espnetes");
+  // WiFiManager manager{};
+  // manager.autoConnect("esp-lw-wifi");
+  WiFi.mode(WIFI_MODE_AP);
+  WiFi.softAP("esp-lw-wifi", "development");
+  Serial.println(WiFi.softAPIP());
+  Serial.println("Wifi: esp-lw-wifi\nPassword: development");
 
   lua.open_libraries(sol::lib::base);
   lw::add_imports(lua);

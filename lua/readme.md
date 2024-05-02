@@ -16,10 +16,8 @@ after this, you should have intellisense.
 
 ## require() and libraries
 
-Because overwriting the require() function comes with compromises am currently not willing to take, lua-world has it's own alternative: `use(...)`
-
-require() can still be used to import other local lua files/modules.
-Modules will be searched in spiffs and on a potential sd card.
+Use require to import all available parts of the standard library, the custom library, and also other lua modules.
+The lua module search path is first /spiffs/ followed by /sd/lua/ and is searched for recursively (e.g. require("xyz/module") will be looked up under /spiffs/xyz/module.lua and /sd/lua/xyz/module.lua).
 
 ### lua standard library
 
