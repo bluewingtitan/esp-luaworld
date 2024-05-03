@@ -1,3 +1,5 @@
+-- simple db demo, demonstrating basic opening and usage of a sqlite3 db
+
 require("sqlite3")
 
 

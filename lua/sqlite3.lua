@@ -108,7 +108,9 @@ _G.SQLITE_DONE = nil
 
 
 ---@class sqlite3
----@field available fun(): boolean
----@field execute fun(sql:string): (err:sqlite3_err, errmsg: string)
+---@field available fun(this: sqlite3): boolean
+---@field execute fun(this: sqlite3, sql:string): (err:sqlite3_err, errmsg: string)
+-- execute sql, retrieve potential error and data as an array
+---@field execute_out fun(this: sqlite3, sql:string): (err:sqlite3_err, errmsg: string, data:table|nil)
 
 ---@class sqlite3_err

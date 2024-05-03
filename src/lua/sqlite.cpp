@@ -1,6 +1,8 @@
 #include "lua_bind.h"
 #include <sqlite3.h>
 #include <tuple>
+#include <map>
+#include <Arduino.h>
 
 int callback(void *data, int argc, char **argv, char **azColName)
 {
@@ -37,8 +39,9 @@ public:
 
         name = "/spiffs/" + name;
 
-        if (db_open(name.c_str(), &db))
+        if (db_open(name.c_str(), &db) == SQLITE_OK)
         {
+            db_ = db;
         }
     }
 
@@ -60,22 +63,36 @@ public:
         return std::make_tuple(rc, errmsg);
     }
 
-    std::tuple<int, std::string, sol::table> execute_out(sol::state &lua, const char *sql)
+    std::tuple<int, std::string, sol::object> execute_out(const char *sql, sol::this_state ts)
     {
+        int i = 0;
+        Serial.println(i++);
+        sol::state_view lua = ts;
+        Serial.println(i++);
         sqlite3_stmt *res;
+        Serial.println(i++);
         const char *tail;
+        Serial.println(i++);
         int rc = sqlite3_prepare_v2(db_, sql, -1, &res, &tail);
+        Serial.println(i++);
 
         if (rc != SQLITE_OK)
         {
+            Serial.println(i++);
             auto errmsg = sqlite3_errmsg(db_);
+            Serial.println(i++);
             return std::make_tuple(rc, errmsg, lua.create_table());
         }
+        Serial.println(i++);
 
         auto ret = lua.create_table();
+        Serial.println(i++);
         int rec_count = 0;
-        parse_sql_out(ret, res);
+        Serial.println(i++);
+        parse_sql_out(ret, res, lua);
+        Serial.println(i++);
         sqlite3_finalize(res);
+        Serial.println(i++);
 
         return std::make_tuple(rc, "", ret);
     }
@@ -83,13 +100,14 @@ public:
 private:
     sqlite3 *db_;
 
-    void parse_sql_out(sol::table &table, sqlite3_stmt *res)
+    void parse_sql_out(sol::table &table, sqlite3_stmt *res, sol::state_view &lua)
     {
-        int elementid = 0;
+        int elementid = 1;
 
         while (sqlite3_step(res) == SQLITE_ROW)
         {
             int count = sqlite3_column_count(res);
+            auto elem = lua.create_table();
 
             for (size_t i = 0; i < count; i++)
             {
@@ -98,30 +116,32 @@ private:
                 switch (sqlite3_column_type(res, i))
                 {
                 case SQLITE_INTEGER:
-                    table[elementid][column_name] = sqlite3_column_int64(res, i);
+                    elem[column_name] = sqlite3_column_int64(res, i);
                     break;
 
                 case SQLITE_FLOAT:
-                    table[elementid][column_name] = sqlite3_column_double(res, i);
+                    elem[column_name] = sqlite3_column_double(res, i);
                     break;
 
                 case SQLITE3_TEXT:
-                    table[elementid][column_name] = std::string{(const char *)sqlite3_column_text(res, i)};
+                    elem[column_name] = std::string{(const char *)sqlite3_column_text(res, i)};
                     break;
 
                 case SQLITE_NULL:
-                    table[elementid][column_name] = sol::nil;
+                    elem[column_name] = sol::nil;
                     break;
 
                 case SQLITE_BLOB:
-                    table[elementid][column_name] = "Columns of type Blob are not supported.";
+                    elem[column_name] = "Columns of type Blob are not supported.";
                     break;
 
                 default:
-                    table[elementid][column_name] = "Unknown column type.";
+                    elem[column_name] = "Unknown column type.";
                     break;
                 }
             }
+            table[elementid] = elem;
+            elementid++;
         }
     }
 };
@@ -133,7 +153,8 @@ void lw::register_sqlite(sol::state &lua)
     lua.new_usertype<sqlite3_wrapper>(
         "sqlite3", sol::constructors<sqlite3_wrapper(std::string dbname)>(),
         "available", &sqlite3_wrapper::available,
-        "execute", &sqlite3_wrapper::execute
+        "execute", &sqlite3_wrapper::execute,
+        "execute_out", &sqlite3_wrapper::execute_out
 
     );
 

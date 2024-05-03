@@ -1,8 +1,8 @@
 -- lua http server demo script
 
-use("webserver")
-use("io")
-use("string")
+require("webserver")
+require("io")
+require("string")
 
 local LED = 2
 io.pin_mode(2, OUTPUT)

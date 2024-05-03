@@ -112,6 +112,12 @@ void use(sol::state &lua, std::string lib)
         return;
     }
 
+    if (lib == "sqlite3")
+    {
+        lw::register_sqlite(lua);
+        return;
+    }
+
     if (lib == "table")
     {
         lua.open_libraries(sol::lib::table);
