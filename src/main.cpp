@@ -2,8 +2,9 @@
 #include <SPIFFS.h>
 #include <WiFiManager.h>
 #include <sol/sol.hpp>
-#include "lua/lua_bind.h"
+#include <RNG.h>
 
+#include "lua/lua_bind.h"
 #include "service/control.h"
 
 sol::state lua;
@@ -44,15 +45,31 @@ void setup()
     Serial.println("Wifi: esp-lw-wifi\nPassword: development");
   }
 
+  // init RNG from the two best sources we got.
+  auto rand = esp_random(); // uses noise from wifi
+  RNG.stir(static_cast<uint8_t *>(static_cast<void *>(&rand)), sizeof(uint32_t), sizeof(uint32_t) * 2);
+  rand = millis(); // unpredictable, as wifi-connection time will vary A LOT.
+  RNG.stir(static_cast<uint8_t *>(static_cast<void *>(&rand)), sizeof(uint32_t), sizeof(uint32_t) * 1);
+
   lua.open_libraries(sol::lib::base);
   lw::add_imports(lua);
   lw::overwrite_defaults(lua);
   lw::add_control(lua, &cp);
+  lw::register_sessionkit(lua);
 
-  execute(SPIFFS);
+  //  execute(SPIFFS);
 }
+
+int i = 0;
 
 void loop()
 {
+  i++;
   cp.loop();
+
+  if (i % 10000)
+  {
+    // housekeeping that has to be done now and then, but not often to keep the system responsive, as housekeeping tends to add up.
+    RNG.loop();
+  }
 }
