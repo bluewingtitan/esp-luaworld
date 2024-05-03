@@ -159,6 +159,8 @@ void lw::add_imports(sol::state &lua)
     {
         use(lua, pck);
     };
+
+    lua["use"] = lua["require"];
 }
 
 void lw::overwrite_defaults(sol::state &lua)

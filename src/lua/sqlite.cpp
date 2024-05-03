@@ -24,6 +24,8 @@ int db_exec(sqlite3 *db, const char *sql, std::string &errstr)
         errstr = std::string{zErrMsg};
         sqlite3_free(zErrMsg);
     }
+
+    return rc;
 }
 
 class sqlite3_wrapper
@@ -50,7 +52,7 @@ public:
         std::string errmsg{};
         if (!available())
         {
-            return std::make_tuple(1, "DB not running");
+            return std::make_tuple(SQLITE_ERROR, "DB not running");
         }
 
         int rc = db_exec(db_, sql, errmsg) == 0;
@@ -58,8 +60,70 @@ public:
         return std::make_tuple(rc, errmsg);
     }
 
+    std::tuple<int, std::string, sol::table> execute_out(sol::state &lua, const char *sql)
+    {
+        sqlite3_stmt *res;
+        const char *tail;
+        int rc = sqlite3_prepare_v2(db_, sql, -1, &res, &tail);
+
+        if (rc != SQLITE_OK)
+        {
+            auto errmsg = sqlite3_errmsg(db_);
+            return std::make_tuple(rc, errmsg, lua.create_table());
+        }
+
+        auto ret = lua.create_table();
+        int rec_count = 0;
+        parse_sql_out(ret, res);
+        sqlite3_finalize(res);
+
+        return std::make_tuple(rc, "", ret);
+    }
+
 private:
     sqlite3 *db_;
+
+    void parse_sql_out(sol::table &table, sqlite3_stmt *res)
+    {
+        int elementid = 0;
+
+        while (sqlite3_step(res) == SQLITE_ROW)
+        {
+            int count = sqlite3_column_count(res);
+
+            for (size_t i = 0; i < count; i++)
+            {
+                std::string column_name = sqlite3_column_name(res, i);
+
+                switch (sqlite3_column_type(res, i))
+                {
+                case SQLITE_INTEGER:
+                    table[elementid][column_name] = sqlite3_column_int64(res, i);
+                    break;
+
+                case SQLITE_FLOAT:
+                    table[elementid][column_name] = sqlite3_column_double(res, i);
+                    break;
+
+                case SQLITE3_TEXT:
+                    table[elementid][column_name] = std::string{(const char *)sqlite3_column_text(res, i)};
+                    break;
+
+                case SQLITE_NULL:
+                    table[elementid][column_name] = sol::nil;
+                    break;
+
+                case SQLITE_BLOB:
+                    table[elementid][column_name] = "Columns of type Blob are not supported.";
+                    break;
+
+                default:
+                    table[elementid][column_name] = "Unknown column type.";
+                    break;
+                }
+            }
+        }
+    }
 };
 
 void lw::register_sqlite(sol::state &lua)
