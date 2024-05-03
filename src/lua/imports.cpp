@@ -173,3 +173,19 @@ void lw::overwrite_defaults(sol::state &lua)
 {
     // not needed yet.
 }
+
+void lw::add_control(sol::state &lua, lw::control_plane *cp)
+{
+    auto cp_table = lua.create_table();
+    cp_table["start_control_plane"] = [cp]()
+    {
+        cp->start();
+    };
+
+    cp_table["stop_control_plane"] = [cp]()
+    {
+        cp->stop();
+    };
+
+    lua["EspLw"] = cp_table;
+}

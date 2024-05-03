@@ -1,6 +1,7 @@
 #pragma once
 
 #include "sol/sol.hpp"
+#include "service/control.h"
 
 namespace lw
 {
@@ -13,4 +14,5 @@ namespace lw
 
     void add_imports(sol::state &lua);
     void overwrite_defaults(sol::state &lua);
+    void add_control(sol::state &lua, lw::control_plane *cp);
 } // namespace netes

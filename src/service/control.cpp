@@ -26,7 +26,7 @@ MCR(control_home, ESP LuaWorld Control,
 
 )
 
-control_plane::control_plane(uint16_t port) : serv_{port}
+control_plane::control_plane(uint16_t port) : serv_{port}, ftp_{}
 {
     serv_.on("/", [](AsyncWebServerRequest *req)
              { req->send(200, "text/html", control_home()); });
@@ -36,6 +36,9 @@ control_plane::control_plane(uint16_t port) : serv_{port}
 
     serv_.on("/memory_total", [](AsyncWebServerRequest *req)
              { req->send(200, "text/plain", std::to_string(ESP.getHeapSize()).c_str()); });
+
+    ftp_.addUser("dev", "dev");
+    ftp_.addFilesystem("SPIFFS", &SPIFFS);
 }
 
 control_plane::~control_plane()
@@ -44,12 +47,28 @@ control_plane::~control_plane()
 
 void control_plane::start()
 {
+    if (running)
+        return;
+    ftp_.begin();
     serv_.begin();
     Serial.println("Control plane started.");
+    running = true;
 }
 
 void control_plane::stop()
 {
+    if (!running)
+        return;
+
     serv_.end();
     Serial.println("Control plane stopped.");
+    running = false;
+}
+
+void control_plane::loop()
+{
+    if (!running)
+        return;
+
+    ftp_.handle();
 }

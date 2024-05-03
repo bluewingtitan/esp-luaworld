@@ -1,6 +1,10 @@
 #pragma once
 #include <cstdint>
 #include <ESPAsyncWebServer.h>
+#include "SPIFFS.h"
+
+#include "ESP-FTP-Server-Lib.h"
+#include "FTPFilesystem.h"
 
 namespace lw
 {
@@ -13,8 +17,12 @@ namespace lw
         void start();
         void stop();
 
+        void loop();
+
     private:
+        bool running{false};
         AsyncWebServer serv_;
+        FTPServer ftp_;
     };
 
 } // namespace lw

@@ -34,6 +34,7 @@ void setup()
   {
     WiFiManager manager{};
     manager.autoConnect("esp-lw-wifi");
+    Serial.println(WiFi.localIP());
   }
   else
   {
@@ -46,12 +47,12 @@ void setup()
   lua.open_libraries(sol::lib::base);
   lw::add_imports(lua);
   lw::overwrite_defaults(lua);
-
-  cp.start();
+  lw::add_control(lua, &cp);
 
   execute(SPIFFS);
 }
 
 void loop()
 {
+  cp.loop();
 }
