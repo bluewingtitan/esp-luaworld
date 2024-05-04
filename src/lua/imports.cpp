@@ -68,7 +68,7 @@ String find_lua_file(File dir, String lua_base_path, String searched_lua)
     return "";
 }
 
-int load_file_require(sol::state &state, fs::File &dir, const char *req)
+int load_file_require(sol::state &state, fs::File &dir, const char *req, sol::object &obj)
 {
     if (dir)
     {
@@ -78,7 +78,7 @@ int load_file_require(sol::state &state, fs::File &dir, const char *req)
 
             if (ret.length() > 0)
             {
-                state.require_script(req, ret.c_str(), true);
+                obj = state.require_script(req, ret.c_str(), true);
                 return 0;
             }
         }
@@ -87,80 +87,86 @@ int load_file_require(sol::state &state, fs::File &dir, const char *req)
 
     Serial.println("Couldn't find module.");
 
+    obj = sol::make_object(state, sol::nil);
+
     return 1;
 }
 
-int load_file_spiffs(sol::state &state, const char *req)
+int load_file_spiffs(sol::state &state, const char *req, sol::object &obj)
 {
     auto dir = SPIFFS.open("/");
-    return load_file_require(state, dir, req);
+    return load_file_require(state, dir, req, obj);
 }
 
-int load_file_sd(sol::state &state, const char *req)
+int load_file_sd(sol::state &state, const char *req, sol::object &obj)
 {
     auto dir = SD.open("/lua/");
-    return load_file_require(state, dir, req);
+    return load_file_require(state, dir, req, obj);
 }
 
-void use(sol::state &lua, std::string lib)
+sol::object use(sol::state &lua, std::string lib)
 {
     if (lib == "webserver")
     {
         lw::register_http_server(lua);
-        return;
+        return sol::make_object(lua, sol::nil);
     }
 
     if (lib == "lwio")
     {
         lw::register_io(lua);
-        return;
+        return sol::make_object(lua, sol::nil);
     }
 
     if (lib == "sqlite3")
     {
         lw::register_sqlite(lua);
-        return;
+        return sol::make_object(lua, sol::nil);
     }
 
     if (lib == "table")
     {
         lua.open_libraries(sol::lib::table);
-        return;
+        return sol::make_object(lua, sol::nil);
     }
 
     if (lib == "string")
     {
         lua.open_libraries(sol::lib::string);
-        return;
+        return sol::make_object(lua, sol::nil);
     }
 
     if (lib == "math")
     {
         lua.open_libraries(sol::lib::math);
-        return;
+        return sol::make_object(lua, sol::nil);
     }
 
     if (lib == "io")
     {
         lua.open_libraries(sol::lib::io);
-        return;
+        return sol::make_object(lua, sol::nil);
     }
 
     if (lib == "utf8")
     {
         lua.open_libraries(sol::lib::utf8);
-        return;
+        return sol::make_object(lua, sol::nil);
     }
 
-    if (load_file_spiffs(lua, lib.c_str()) == 0)
+    sol::object obj;
+
+    if (load_file_spiffs(lua, lib.c_str(), obj) == 0)
     {
-        return;
+        return obj;
     }
 
-    if (load_file_sd(lua, lib.c_str()) == 0)
+    if (load_file_sd(lua, lib.c_str(), obj) == 0)
     {
-        return;
+        return obj;
     }
+
+    return sol::make_object(lua, sol::nil);
 }
 
 void lw::add_imports(sol::state &lua)
