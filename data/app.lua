@@ -1,14 +1,17 @@
-require("lustache.renderer")
-require("db")
-EspLw:start_control_plane();
+require("offgrid.logger")
+Log.init_logger(PrintSink, "offgrid")
+Log.logger:set_level(LogLevel.trace)
 
+require("offgrid.db")
 
-local view_model = {
-    title = "Joe",
-    calc = function()
-        return 2 + 4
-    end
+Log.info("Starting up offgrid social...")
+
+OffgridEnv = {
+    Db = OffGridDb
 }
-local lus = LustacheRenderer:new()
-local out = lus:render("{{title}} spends {{calc}}", view_model)
-print(out)
+
+Log.debug("Initialize modules")
+OffgridEnv.Db:setup()
+Log.debug("Initialized modules")
+
+Log.info("Offgrid Social ready")
