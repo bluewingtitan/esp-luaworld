@@ -16,7 +16,15 @@ int execute(FS fs)
   {
     auto script = fs.open("/app.lua");
     auto str = script.readString();
-    lua.safe_script(str.c_str());
+    try
+    {
+      lua.script(str.c_str());
+    }
+    catch (const std::exception &e)
+    {
+      Serial.println(e.what());
+    }
+
     return 0;
   }
   else

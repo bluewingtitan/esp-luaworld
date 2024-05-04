@@ -23,9 +23,15 @@ Due to limitations of the plattform, require targeting other files works a bit d
 
 - require always is relative to the base search path, not the module directory (e.g. /xy/z.lua needs to use require("xy.b") to require /xy/b.lua)
 - require will not return anything, even if the loaded module returns.
-- require will fully execute all top-level code in the loaded module before returning. Use this to setup global variables as needed.
+- require will fully execute all top-level code in the loaded module before returning.
+
+While local variables are still isolated between scripts, global variables are not (duh). Use global variables instead of returns.
 
 This compromise was chosen carefully to still enable easy porting of most packages.
+
+**KEEP IN MIND THAT SPIFFS WILL OUTPUT A FLAT STRUCTURE AND DOES NOT SUPPORT DIRECTORIES!** This is a limitation of spiffs, there is nothing I can do about that.
+
+Use . in the filename to structure your modules into submodules, or use an SD-card.
 
 ### lua standard library
 
@@ -35,6 +41,8 @@ From the standard library the following are importable via use:
 - string
 - math
 - utf8
+- io
+  - /spiffs/ and /sd/ are the mount points for spiffs and sd respectively.
 
 All other stdlibs either did not work, or might now offer the full experience.
 

@@ -21,31 +21,33 @@ String find_lua_file(File dir, String lua_base_path, String searched_lua)
     while (File entry = dir.openNextFile())
     {
         String name = entry.name();
+        Serial.println("search:> " + name);
 
         if (entry.isDirectory())
         {
             if (searched_lua.indexOf(name) >= 0)
             {
-                Serial.println("search dir: " + name);
+                Serial.println("search>> " + name + "/");
                 auto ret = find_lua_file(entry, lua_base_path + "." + name, searched_lua);
+                entry.close();
 
                 if (ret.length() > 0)
                 {
-                    entry.close();
                     return ret;
                 }
             }
             else
             {
-                Serial.println("skip dir: " + name);
+                Serial.println("skip:> " + name + "/");
                 entry.close();
-                continue;
             }
+
+            continue;
         }
 
         if (!name.endsWith(".lua"))
         {
-            Serial.println("skip file: " + name);
+            Serial.println("skip<");
             entry.close();
             continue;
         }
@@ -55,6 +57,8 @@ String find_lua_file(File dir, String lua_base_path, String searched_lua)
         if ((lua_base_path + "." + stripped) == searched_lua || stripped == searched_lua)
         {
             // found it!
+            Serial.println("found:> " + searched_lua);
+            Serial.println("\n");
             auto val = entry.readString();
             entry.close();
             return val;
@@ -74,7 +78,7 @@ int load_file_require(sol::state &state, fs::File &dir, const char *req)
 
             if (ret.length() > 0)
             {
-                state.do_string(ret.c_str(), req);
+                state.require_script(req, ret.c_str(), true);
                 return 0;
             }
         }
@@ -106,7 +110,7 @@ void use(sol::state &lua, std::string lib)
         return;
     }
 
-    if (lib == "io")
+    if (lib == "lwio")
     {
         lw::register_io(lua);
         return;
@@ -136,9 +140,9 @@ void use(sol::state &lua, std::string lib)
         return;
     }
 
-    if (lib == "package")
+    if (lib == "io")
     {
-        lua.open_libraries(sol::lib::package);
+        lua.open_libraries(sol::lib::io);
         return;
     }
 
