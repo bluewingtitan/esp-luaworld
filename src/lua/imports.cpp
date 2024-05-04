@@ -74,7 +74,7 @@ int load_file_require(sol::state &state, fs::File &dir, const char *req)
 
             if (ret.length() > 0)
             {
-                state.load(ret.c_str(), req);
+                state.do_string(ret.c_str(), req);
                 return 0;
             }
         }
