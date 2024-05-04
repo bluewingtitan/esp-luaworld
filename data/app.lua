@@ -1,16 +1,14 @@
 require("sqlite3")
-
+require("lustache.renderer")
 EspLw:start_control_plane();
 
-local function dump(o)
-    if type(o) == 'table' then
-        local s = '{ '
-        for k, v in pairs(o) do
-            if type(k) ~= 'number' then k = '"' .. k .. '"' end
-            s = s .. '[' .. k .. '] = ' .. dump(v) .. ','
-        end
-        return s .. '} '
-    else
-        return tostring(o)
+
+local view_model = {
+    title = "Joe",
+    calc = function()
+        return 2 + 4
     end
-end
+}
+local lus = LustacheRenderer:new()
+local out = lus:render("{{title}} spends {{calc}}", view_model)
+print(out)
