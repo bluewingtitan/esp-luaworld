@@ -412,5 +412,3 @@ function renderer:new()
 end
 
 LustacheRenderer = renderer
-
-return "hello"
