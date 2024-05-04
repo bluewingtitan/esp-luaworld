@@ -55,9 +55,8 @@ void setup()
   lw::add_imports(lua);
   lw::overwrite_defaults(lua);
   lw::add_control(lua, &cp);
-  lw::register_sessionkit(lua);
 
-  //  execute(SPIFFS);
+  execute(SPIFFS);
 }
 
 int i = 0;
